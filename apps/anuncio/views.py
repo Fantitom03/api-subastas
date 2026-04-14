@@ -1,11 +1,15 @@
 from django.shortcuts import get_object_or_404, render
 from rest_framework import status
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Anuncio, Categoria
 from .serializers import AnuncioSerializer, CategoriaSerializer
 from apps.usuario.models import Usuario
 
+
+
+#Vistas APIView Categoría 
 class CategoriaListaAPIView(APIView):
     def get(self, request, format=None):
         categorias = Categoria.objects.all()
@@ -41,6 +45,7 @@ class CategoriaDetalleAPIView(APIView):
         return Response(status.HTTP_204_NO_CONTENT)
     
 
+#Vistas APIView Anuncio 
 class AnuncioListaAPIView(APIView):
     def get(self,request, format=None):
         anuncios = Anuncio.objects.all()
@@ -50,10 +55,9 @@ class AnuncioListaAPIView(APIView):
     def post(self, request, format=None):
         serializer = AnuncioSerializer(data=request.data)
         if serializer.is_valid():
-            # Temporalmente, buscamos solamente el primer usuario de la base de datos para llenar el campo publicado_por del anuncio. Esto es solo para pruebas.
+            # TEMPORAL: Forzamos la asignación del primer usuario
             usuario_prueba = Usuario.objects.first() 
             
-            # Y se lo pasamos directamente al método save()
             serializer.save(publicado_por=usuario_prueba) 
             
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -79,3 +83,19 @@ class AnuncioDetalleAPIView(APIView):
         anuncio = get_object_or_404(Anuncio, pk=pk)
         anuncio.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+#Vistas Anuncio GenericAPIView
+class AnuncioListaGenericView(ListCreateAPIView):
+    queryset = Anuncio.objects.all()
+    serializer_class = AnuncioSerializer
+
+    def perform_create(self, serializer):
+        # TEMPORAL: Forzamos la asignación del primer usuario
+        usuario_prueba = Usuario.objects.first()
+        serializer.save(publicado_por=usuario_prueba)
+
+class AnuncioDetalleGenericView(RetrieveUpdateDestroyAPIView):
+    queryset = Anuncio.objects.all()
+    serializer_class = AnuncioSerializer
