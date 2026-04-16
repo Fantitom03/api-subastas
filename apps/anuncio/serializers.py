@@ -66,7 +66,3 @@ class AnuncioSerializer(serializers.ModelSerializer):
         instance.categorias.set(nuevas_categorias) 
         return instance
     
-class TiempoRestanteSerializer(serializers.Serializer):
-    dias = serializers.IntegerField()
-    horas = serializers.IntegerField()
-    minutos = serializers.IntegerField()
