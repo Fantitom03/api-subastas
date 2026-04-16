@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 from .models import Anuncio
 from apps.usuario.models import Usuario
-from .serializers import AnuncioSerializer, TiempoRestanteSerializer
+from .serializers import AnuncioSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.utils import timezone
@@ -18,7 +18,7 @@ class AnuncioViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'])
     def get_remaining_time(self, request, pk=None):
-        anuncio = get_object_or_404(self.get_queryset(), pk=pk)
+        anuncio = get_object_or_404(Anuncio, pk=pk)
 
         fecha_fin = anuncio.fecha_fin
         fecha_actual = timezone.now()
@@ -38,9 +38,8 @@ class AnuncioViewSet(viewsets.ModelViewSet):
                 'minutos': 0,
             }  
 
-        serializer = TiempoRestanteSerializer(data)
 
-        return Response(serializer.data)
+        return Response(data)
 
 
 
