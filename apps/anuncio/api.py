@@ -1,15 +1,22 @@
-from rest_framework import viewsets
-from .models import Anuncio
+from rest_framework import viewsets, filters
+from django_filters.rest_framework import DjangoFilterBackend
+from .models import Anuncio, Categoria
 from apps.usuario.models import Usuario
-from .serializers import AnuncioSerializer, TiempoRestanteSerializer
+from .serializers import AnuncioSerializer, CategoriaSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
+from .filters import AnuncioFilter, CategoriaFilter
 
 class AnuncioViewSet(viewsets.ModelViewSet):
     queryset = Anuncio.objects.all()
     serializer_class = AnuncioSerializer
+
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
+    filterset_class = AnuncioFilter
+    ordering_fields = ['precio_inicial', 'fecha_publicacion', 'fecha_inicio']
+    search_fields = ['titulo', 'descripcion']
 
     def perform_create(self, serializer):
         usuario_a_asignar = Usuario.objects.first()
@@ -18,29 +25,36 @@ class AnuncioViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'])
     def get_remaining_time(self, request, pk=None):
-        anuncio = get_object_or_404(self.get_queryset(), pk=pk)
+        anuncio = get_object_or_404(Anuncio, pk=pk)
 
-        fecha_fin = anuncio.fecha_fin
-        fecha_actual = timezone.now()
+        last_date = anuncio.fecha_fin
+        current_date = timezone.localtime(timezone.now())
         
-        if fecha_fin > fecha_actual: 
-            tiempo_restante = fecha_fin - fecha_actual
+        remaining_time = last_date - current_date
 
-            data = {
-                'dias': tiempo_restante.days,
-                'horas': tiempo_restante.seconds // 3600,
-                'minutos': (tiempo_restante.seconds // 60) % 60,
-            }    
-        else:
-            data = {
-                'dias': 0,
-                'horas': 0,
-                'minutos': 0,
-            }  
+        if request.version == '2': 
+            return Response(
+                {
+                    'status': 'Pronto a finalizar' if remaining_time.days < 2 else 'Lejos de finalizar',
+                    'message': f'Quedan {remaining_time.days} Dias {remaining_time.seconds // 3600} Horas {(remaining_time.seconds // 60) % 60} Minutos',
+                }  
+            )
 
-        serializer = TiempoRestanteSerializer(data)
+        return Response(
+            {
+                'dias': remaining_time.days,
+                'horas': remaining_time.seconds // 3600,
+                'minutos': (remaining_time.seconds // 60) % 60,
+            } 
+        ) 
 
-        return Response(serializer.data)
 
 
+class CategoriaViewSet(viewsets.ModelViewSet):
+    queryset = Categoria.objects.all()
+    serializer_class = CategoriaSerializer
+    
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_class = CategoriaFilter
+    ordering_fields = ['nombre']
 
