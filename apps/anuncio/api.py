@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 from .models import Anuncio
 from apps.usuario.models import Usuario
-from .serializers import AnuncioSerializer, TiempoRestanteSerializer
+from .serializers import AnuncioSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.utils import timezone
@@ -18,29 +18,27 @@ class AnuncioViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'])
     def get_remaining_time(self, request, pk=None):
-        anuncio = get_object_or_404(self.get_queryset(), pk=pk)
+        anuncio = get_object_or_404(Anuncio, pk=pk)
 
-        fecha_fin = anuncio.fecha_fin
-        fecha_actual = timezone.now()
+        last_date = anuncio.fecha_fin
+        current_date = timezone.localtime(timezone.now())
         
-        if fecha_fin > fecha_actual: 
-            tiempo_restante = fecha_fin - fecha_actual
+        remaining_time = last_date - current_date
 
-            data = {
-                'dias': tiempo_restante.days,
-                'horas': tiempo_restante.seconds // 3600,
-                'minutos': (tiempo_restante.seconds // 60) % 60,
-            }    
-        else:
-            data = {
-                'dias': 0,
-                'horas': 0,
-                'minutos': 0,
-            }  
+        if request.version == '2': 
+            return Response(
+                {
+                    'status': 'Pronto a finalizar' if remaining_time.days < 2 else 'Lejos de finalizar',
+                    'message': f'Quedan {remaining_time.days} Dias {remaining_time.seconds // 3600} Horas {(remaining_time.seconds // 60) % 60} Minutos',
+                }  
+            )
 
-        serializer = TiempoRestanteSerializer(data)
-
-        return Response(serializer.data)
-
+        return Response(
+            {
+                'dias': remaining_time.days,
+                'horas': remaining_time.seconds // 3600,
+                'minutos': (remaining_time.seconds // 60) % 60,
+            } 
+        ) 
 
 
