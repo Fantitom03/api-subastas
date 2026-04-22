@@ -13,9 +13,13 @@ class AnuncioViewSet(viewsets.ModelViewSet):
     queryset = Anuncio.objects.all()
     serializer_class = AnuncioSerializer
 
+    # Configuración de filtros, ordenamiento y búsqueda
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
+    # El filterset_class nos permite definir un conjunto de filtros personalizados para nuestro modelo
     filterset_class = AnuncioFilter
+    # El ordering_fields nos permite definir los campos por los cuales se puede ordenar la consulta.
     ordering_fields = ['precio_inicial', 'fecha_publicacion', 'fecha_inicio']
+    # El search_fields nos permite definir los campos por los cuales se puede realizar una búsqueda de texto completo. Admitiendo busquedas parciales e insensibles a mayúsculas.
     search_fields = ['titulo', 'descripcion']
 
     def perform_create(self, serializer):
