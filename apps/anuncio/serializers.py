@@ -14,18 +14,15 @@ class CategoriaSerializer(serializers.ModelSerializer):
 
 
 
-# Heredamos de Serializer (no ModelSerializer). 
-# Solo definimos los campos que esperamos recibir. Es decir, no hay validación de DB, ni de duplicados, ni nada. Solo validación de tipos y formatos.
-class CategoriaAnidadaSerializer(serializers.Serializer):
-    id = serializers.IntegerField(required=False)
-    nombre = serializers.CharField(max_length=100)
-    activa = serializers.BooleanField(default=True, required=False)
-
-
-
 class AnuncioSerializer(serializers.ModelSerializer):
-    # Usamos el serializador "puro"
-    categorias = CategoriaAnidadaSerializer(many=True, required=False)
+    
+    # Manejamos las categorías por su id, pero queremos devolver el objeto completo en la respuesta. Por eso, usamos PrimaryKeyRelatedField 
+    # para recibir solo los ids de las categorías, y luego modificamos la representación en to_representation.
+    categorias = serializers.PrimaryKeyRelatedField(
+        queryset=Categoria.objects.all(), 
+        many=True, 
+        required=False
+    )
     
     class Meta:
         model= Anuncio
@@ -37,6 +34,7 @@ class AnuncioSerializer(serializers.ModelSerializer):
         read_only_fields = ['publicado_por', 'oferta_ganadora']
 
 
+    # ----- VALIDACIONES PERSONALIZADAS ----- #
     def validate_precio_inicial(self, data):
         request = self.context.get('request') #permite tener contexto de la view en el serializador, si no existe devuelve None
         if request and request.version == '2':
@@ -58,11 +56,11 @@ class AnuncioSerializer(serializers.ModelSerializer):
         if data['fecha_fin'] < data['fecha_inicio']:
             raise serializers.ValidationError("La fecha de fin debe ser superior a la fecha inicio")
         return data
-
-    # Usamos to_representation para modificar la respuesta que se le da al cliente. En este caso, queremos devolver el objeto completo de las categorías, no solo su id.
+    
+    
+    # ----- REPRESENTACIÓN ANUNCIOS ----- #
+    # Usamos to_representation para modificar la respuesta. En este caso, queremos devolver el objeto completo de las categorías, no solo su id.
     def to_representation(self, instance):
-        #Usamos super() para mantener la funcionalidad original del método y luego modificamos la representación según nuestras necesidades.
         representation = super().to_representation(instance)
-        # Devolvemos el objeto completo con todas las categorías asociadas al anuncio, usando el serializador de categoría para cada una de ellas.
         representation['categorias'] = CategoriaSerializer(instance.categorias.all(), many=True).data
         return representation
