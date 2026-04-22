@@ -37,38 +37,6 @@ class AnuncioSerializer(serializers.ModelSerializer):
         read_only_fields = ['publicado_por', 'oferta_ganadora']
 
 
-    def create(self, validated_data):
-        categorias_data = validated_data.pop('categorias', [])
-        anuncio = Anuncio.objects.create(**validated_data)
-        
-        for categoria_data in categorias_data:
-            nombre_categoria = categoria_data.get('nombre')
-            if nombre_categoria:
-                # Como la validación de duplicados no frenó la petición, puedo ejecutar esto
-                categoria, _ = Categoria.objects.get_or_create(nombre=nombre_categoria)
-                anuncio.categorias.add(categoria)
-                
-        return anuncio
-
-    def update(self, instance, validated_data):
-        categorias_data = validated_data.pop('categorias', []) 
-
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-
-        nuevas_categorias = []
-        for categoria_data in categorias_data:
-            nombre_categoria = categoria_data.get('nombre')
-            if nombre_categoria:
-                categoria, _ = Categoria.objects.get_or_create(nombre=nombre_categoria)
-                nuevas_categorias.append(categoria)
-
-        instance.categorias.set(nuevas_categorias) 
-        return instance
-
-
-
     def validate_precio_inicial(self, data):
         request = self.context.get('request') #permite tener contexto de la view en el serializador, si no existe devuelve None
         if request and request.version == '2':
@@ -90,3 +58,11 @@ class AnuncioSerializer(serializers.ModelSerializer):
         if data['fecha_fin'] < data['fecha_inicio']:
             raise serializers.ValidationError("La fecha de fin debe ser superior a la fecha inicio")
         return data
+
+    # Usamos to_representation para modificar la respuesta que se le da al cliente. En este caso, queremos devolver el objeto completo de las categorías, no solo su id.
+    def to_representation(self, instance):
+        #Usamos super() para mantener la funcionalidad original del método y luego modificamos la representación según nuestras necesidades.
+        representation = super().to_representation(instance)
+        # Devolvemos el objeto completo con todas las categorías asociadas al anuncio, usando el serializador de categoría para cada una de ellas.
+        representation['categorias'] = CategoriaSerializer(instance.categorias.all(), many=True).data
+        return representation
