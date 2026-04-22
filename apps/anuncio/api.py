@@ -54,7 +54,10 @@ class CategoriaViewSet(viewsets.ModelViewSet):
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
     
+    # Configuración de filtros, ordenamiento y búsqueda
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    # El filterset_class nos permite definir un conjunto de filtros personalizados para nuestro modelo
     filterset_class = CategoriaFilter
+    # El ordering_fields nos permite definir los campos por los cuales se puede ordenar la consulta.
     ordering_fields = ['nombre']
 

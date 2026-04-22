@@ -39,7 +39,7 @@ class AnuncioSerializer(serializers.ModelSerializer):
 
     def validate_precio_inicial(self, data):
         request = self.context.get('request') #permite tener contexto de la view en el serializador, si no existe devuelve None
-        if request and request.version == '2':
+        if request.version == '2':
             if data < 50:
                 raise serializers.ValidationError("El precio inicial debe ser mayor o igual a $50")
         elif data <= 0:
