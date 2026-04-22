@@ -17,7 +17,7 @@ urlpatterns = [
     path('generic-view/anuncio/<pk>/', AnuncioDetalleGenericView.as_view()),
 
     #router
-    path('view-set/', include('apps.anuncio.router'))
+    path('api/', include('apps.anuncio.router'))
 ]
     
 

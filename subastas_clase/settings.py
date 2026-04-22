@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_filters',
     'apps.usuario',
     'apps.anuncio',
     'rest_framework'
@@ -141,6 +142,11 @@ REST_FRAMEWORK= {
     ], 
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.AcceptHeaderVersioning',
     'ALLOWED_VERSIONS': ['1', '2'],
-    'DEFAULT_VERSION': '1'
+    'DEFAULT_VERSION': '1',
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 5,
 }
 

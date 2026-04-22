@@ -1,15 +1,22 @@
-from rest_framework import viewsets
-from .models import Anuncio
+from rest_framework import viewsets, filters
+from django_filters.rest_framework import DjangoFilterBackend
+from .models import Anuncio, Categoria
 from apps.usuario.models import Usuario
-from .serializers import AnuncioSerializer
+from .serializers import AnuncioSerializer, CategoriaSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
+from .filters import AnuncioFilter, CategoriaFilter
 
 class AnuncioViewSet(viewsets.ModelViewSet):
     queryset = Anuncio.objects.all()
     serializer_class = AnuncioSerializer
+
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
+    filterset_class = AnuncioFilter
+    ordering_fields = ['precio_inicial', 'fecha_publicacion', 'fecha_inicio']
+    search_fields = ['titulo', 'descripcion']
 
     def perform_create(self, serializer):
         usuario_a_asignar = Usuario.objects.first()
@@ -41,4 +48,13 @@ class AnuncioViewSet(viewsets.ModelViewSet):
             } 
         ) 
 
+
+
+class CategoriaViewSet(viewsets.ModelViewSet):
+    queryset = Categoria.objects.all()
+    serializer_class = CategoriaSerializer
+    
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_class = CategoriaFilter
+    ordering_fields = ['nombre']
 
