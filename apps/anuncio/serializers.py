@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from apps.anuncio.models import Anuncio, Categoria
 from apps.usuario.models import Usuario
+from django.utils import timezone
 
 class CategoriaSerializer(serializers.ModelSerializer): 
     class Meta: 
@@ -65,8 +66,27 @@ class AnuncioSerializer(serializers.ModelSerializer):
 
         instance.categorias.set(nuevas_categorias) 
         return instance
+
+
+
+    def validate_precio_inicial(self, data):
+        request = self.context.get('request') #permite tener contexto de la view en el serializador, si no existe devuelve None
+        if request and request.version == '2':
+            if data < 50:
+                raise serializers.ValidationError("El precio inicial debe ser mayor o igual a $50")
+        elif data <= 0:
+            raise serializers.ValidationError("El precio inicial debe ser mayor a $0")
+
+        return data
     
-class TiempoRestanteSerializer(serializers.Serializer):
-    dias = serializers.IntegerField()
-    horas = serializers.IntegerField()
-    minutos = serializers.IntegerField()
+    def validate_fecha_inicio(self, data):
+        current_date = timezone.localtime(timezone.now())
+
+        if data < current_date:
+            raise serializers.ValidationError(f"La fecha ingresada debe ser superior que la actual - Fecha Actual {current_date}")
+        return data
+    
+    def validate(self, data):
+        if data['fecha_fin'] < data['fecha_inicio']:
+            raise serializers.ValidationError("La fecha de fin debe ser superior a la fecha inicio")
+        return data
