@@ -17,10 +17,19 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from rest_framework_simplejwt.views import (TokenObtainPairView, TokenRefreshView)
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("", include('apps.anuncio.urls', namespace='anuncio')),
     path('api/token/', TokenObtainPairView.as_view()),
-    path('api/token/refresh/',TokenRefreshView.as_view())
+    path('api/token/refresh/',TokenRefreshView.as_view()),
+
+    # --- RUTAS PARA LA DOCUMENTACIÓN SWAGGER / REDOC ---
+    # Generación del esquema OpenAPI (JSON) para la API
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    # Documentación Swagger UI (interactiva)
+    path('api/docs/swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    # Documentación ReDoc (estática, pero más detallada)
+    path('api/docs/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 ]

@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import Usuario
-
+from drf_spectacular.utils import extend_schema, extend_schema_view
+    
 class UsuarioAdmin(UserAdmin):
     model = Usuario
     
