@@ -10,11 +10,33 @@ from .filters import AnuncioFilter, CategoriaFilter
 from rest_framework.permissions import IsAuthenticated
 from .permissions import IsPropietarioOrReadOnly
 from rest_framework import status
+from drf_spectacular.utils import extend_schema, extend_schema_view
 
-
-
-
+@extend_schema_view(
+    list=extend_schema(          # <--- REEMPLAZA 'get' (para la lista) POR 'list'
+        summary="Listar anuncios",
+        description="Devuelve todos los anuncios."
+    ),
+    retrieve=extend_schema(      # <--- REEMPLAZA 'get' (para un ID) POR 'retrieve'
+        summary="Detalle de anuncio",
+        description="Devuelve un anuncio específico."
+    ),
+    create=extend_schema(        # <--- REEMPLAZA 'post' POR 'create'
+        summary="Crear anuncio",
+        description="Crea un nuevo anuncio en la base de datos."
+    ),
+    update=extend_schema(        # <--- REEMPLAZA 'put' POR 'update'
+        summary="Actualizar anuncio"
+    ),
+    partial_update=extend_schema( # <--- REEMPLAZA 'patch' POR 'partial_update'
+        summary="Actualización parcial"
+    ),
+    destroy=extend_schema(       # <--- REEMPLAZA 'delete' POR 'destroy'
+        summary="Eliminar anuncio"
+    )
+)
 class AnuncioViewSet(viewsets.ModelViewSet):
+    
     queryset = Anuncio.objects.all()
     serializer_class = AnuncioSerializer
     # Usar el UUID en la URL en lugar del ID
@@ -105,7 +127,29 @@ class AnuncioViewSet(viewsets.ModelViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
+@extend_schema_view (
+    list=extend_schema(
+        summary="Listar categorías",
+        description="Devuelve todas las categorías."
+    ),
+    retrieve=extend_schema(
+        summary="Detalle de categoría",
+        description="Devuelve una categoría específica."
+    ),
+    create=extend_schema(
+        summary="Crear categoría",
+        description="Crea una nueva categoría en la base de datos."
+    ),
+    update=extend_schema(
+        summary="Actualizar categoría"
+    ),
+    partial_update=extend_schema(
+        summary="Actualización parcial de categoría"
+    ),
+    destroy=extend_schema(
+        summary="Eliminar categoría"
+    )
+)
 class CategoriaViewSet(viewsets.ModelViewSet):
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
