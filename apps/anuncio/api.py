@@ -13,25 +13,25 @@ from rest_framework import status
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
 @extend_schema_view(
-    list=extend_schema(          # <--- REEMPLAZA 'get' (para la lista) POR 'list'
+    list=extend_schema(
         summary="Listar anuncios",
         description="Devuelve todos los anuncios."
     ),
-    retrieve=extend_schema(      # <--- REEMPLAZA 'get' (para un ID) POR 'retrieve'
+    retrieve=extend_schema(
         summary="Detalle de anuncio",
         description="Devuelve un anuncio específico."
     ),
-    create=extend_schema(        # <--- REEMPLAZA 'post' POR 'create'
+    create=extend_schema(
         summary="Crear anuncio",
         description="Crea un nuevo anuncio en la base de datos."
     ),
-    update=extend_schema(        # <--- REEMPLAZA 'put' POR 'update'
+    update=extend_schema(
         summary="Actualizar anuncio"
     ),
-    partial_update=extend_schema( # <--- REEMPLAZA 'patch' POR 'partial_update'
+    partial_update=extend_schema(
         summary="Actualización parcial"
     ),
-    destroy=extend_schema(       # <--- REEMPLAZA 'delete' POR 'destroy'
+    destroy=extend_schema(
         summary="Eliminar anuncio"
     )
 )
